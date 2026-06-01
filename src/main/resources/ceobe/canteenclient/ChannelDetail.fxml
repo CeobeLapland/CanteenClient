@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="1000.0" prefHeight="720.0"
+            stylesheets="@../css/app.css"
+            styleClass="page-root"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ceobe.canteenclient.controller.ChannelDetailController">
+
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="detail-top">
+            <padding>
+                <Insets top="16" right="18" bottom="10" left="18"/>
+            </padding>
+            <Button text="← 返回" onAction="#handleBack" styleClass="secondary-btn"/>
+            <Label text="帖子详情" styleClass="page-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="result-scroll">
+            <content>
+                <VBox spacing="14" styleClass="detail-wrap">
+                    <padding>
+                        <Insets top="18" right="18" bottom="18" left="18"/>
+                    </padding>
+
+                    <VBox spacing="10" styleClass="detail-card">
+                        <Label fx:id="titleLabel" text="帖子标题" styleClass="detail-name"/>
+                        <HBox spacing="18">
+                            <Label fx:id="authorLabel" text="发帖人："/>
+                            <Label fx:id="timeLabel" text="时间："/>
+                            <Label fx:id="typeLabel" text="类型："/>
+                        </HBox>
+                        <TextArea fx:id="contentArea"
+                                  editable="false"
+                                  wrapText="true"
+                                  prefRowCount="10"
+                                  styleClass="intro-area"/>
+                        <HBox spacing="18">
+                            <Label fx:id="viewLabel" text="浏览量：0"/>
+                            <Label fx:id="likeLabel" text="点赞量：0"/>
+                            <Label fx:id="commentCountLabel" text="评论数：0"/>
+                        </HBox>
+                    </VBox>
+
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Button text="点赞" onAction="#handleLike" styleClass="primary-btn"/>
+                        <Label text="点击后点赞数会即时更新" styleClass="card-meta"/>
+                    </HBox>
+
+                    <VBox spacing="10" styleClass="detail-card">
+                        <Label text="评论区" styleClass="section-title"/>
+                        <ListView fx:id="commentListView" prefHeight="220.0"/>
+                        <HBox spacing="10">
+                            <TextField fx:id="commentField"
+                                       promptText="输入评论..."
+                                       HBox.hgrow="ALWAYS"
+                                       styleClass="search-field"/>
+                            <Button text="发送" onAction="#handleSendComment" styleClass="primary-btn"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+    <right>
+        <VBox prefWidth="260.0" spacing="10" styleClass="sidebar">
+            <padding>
+                <Insets top="18" right="14" bottom="18" left="14"/>
+            </padding>
+            <Label text="相似推荐" styleClass="sidebar-title"/>
+            <ScrollPane fitToWidth="true" styleClass="result-scroll">
+                <content>
+                    <VBox fx:id="recommendBox" spacing="10"/>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </right>
+</BorderPane>

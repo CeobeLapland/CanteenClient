@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="1000.0" prefHeight="720.0"
+            stylesheets="@../css/app.css"
+            styleClass="page-root"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ceobe.canteenclient.controller.ChannelComposeController">
+
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="detail-top">
+            <padding>
+                <Insets top="16" right="18" bottom="10" left="18"/>
+            </padding>
+            <Button text="← 返回" onAction="#handleBack" styleClass="secondary-btn"/>
+            <Label text="发帖" styleClass="page-title"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="result-scroll">
+            <content>
+                <VBox spacing="14" styleClass="detail-wrap">
+                    <padding>
+                        <Insets top="18" right="18" bottom="18" left="18"/>
+                    </padding>
+
+                    <VBox spacing="10" styleClass="detail-card">
+                        <Label text="帖子内容" styleClass="section-title"/>
+                        <TextArea fx:id="contentArea"
+                                  promptText="请输入帖子内容..."
+                                  wrapText="true"
+                                  prefRowCount="14"
+                                  styleClass="intro-area"/>
+                    </VBox>
+
+                    <VBox spacing="10" styleClass="detail-card">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="当前类型：" styleClass="card-meta"/>
+                            <Label fx:id="typeValueLabel" text="未选择" styleClass="page-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="添加类型" onAction="#handleChooseType" styleClass="secondary-btn"/>
+                        </HBox>
+                        <Label text="点击后选择一个帖子类型" styleClass="card-meta"/>
+                    </VBox>
+
+                    <VBox spacing="10" styleClass="detail-card">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="关联食物：" styleClass="card-meta"/>
+                            <Label fx:id="foodValueLabel" text="未选择" styleClass="page-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="选择食物" onAction="#handleChooseFood" styleClass="secondary-btn"/>
+                        </HBox>
+                        <Label text="这里后续会跳转到你自己的食物选择界面" styleClass="card-meta"/>
+                    </VBox>
+
+                    <Button text="发布帖子" onAction="#handlePublish" styleClass="primary-btn"
+                            maxWidth="1.7976931348623157E308"/>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

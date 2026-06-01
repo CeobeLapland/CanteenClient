@@ -15,19 +15,20 @@
                 <Insets bottom="12" left="16" right="16" top="12" />
             </padding>
             <children>
-                <Label styleClass="title-text" text="学校食堂数据库" />
-                <HBox alignment="CENTER_RIGHT" spacing="30.0">
+                <Label maxHeight="30.0" maxWidth="140.0" prefHeight="30.0" prefWidth="140.0" styleClass="title-text" text="学校食堂数据库" />
+                <HBox alignment="CENTER_LEFT" maxWidth="800.0" prefWidth="800.0" spacing="30.0">
                     <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showFoodPanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="食物">
                   <HBox.margin>
                      <Insets left="50.0" />
                   </HBox.margin></Button>
                     <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showChannelPanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="频道" />
-                    <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showCookPanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="做饭" />
+               <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showEatWhatPanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="吃" />
+                    <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showCookFrameworkPanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="做饭" />
                     <Button maxHeight="40.0" maxWidth="80.0" minHeight="40.0" minWidth="80.0" onAction="#showProfilePanel" prefHeight="40.0" prefWidth="80.0" styleClass="nav-btn" text="个人" />
 
                     <Button onAction="#minimizeWindow" styleClass="window-btn" text="—">
                   <HBox.margin>
-                     <Insets left="200.0" />
+                     <Insets left="50.0" />
                   </HBox.margin></Button>
                     <Button onAction="#closeWindow" styleClass="window-btn close-btn" text="✕" />
                <padding>

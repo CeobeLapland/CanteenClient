@@ -1,8 +1,12 @@
 package ceobe.canteenclient.net;
 
+import ceobe.canteenclient.net.dto.Dtos;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.function.Consumer;
+
+import ceobe.canteenclient.net.dto.Dtos.FoodDetailDto;
+import ceobe.canteenclient.net.request.FoodRequest;
 
 /**
  * 食物相关接口封装示例。
@@ -21,6 +25,22 @@ public class FoodService {
     public static FoodService getInstance() { return INSTANCE; }
     private FoodService() {}
 
+
+    /**
+     * 测试函数
+     * <p>GET /api/v1/foods/test
+     */
+    public void test(Consumer<ApiResponse<String>> onSuccess,
+                     Consumer<String> onError) {
+        net.get(
+                "/api/v1/foods/test",
+                new TypeReference<ApiResponse<String>>() {
+                },
+                onSuccess,
+                onError
+        );
+    }
+
     // ════════════════════════════════════════════════════════════════════
     //  GET  /api/food?page=0&size=10
     // ════════════════════════════════════════════════════════════════════
@@ -32,18 +52,18 @@ public class FoodService {
      *
      * @param page      页码（从 0 开始，与后端一致）
      * @param size      每页条数
-     * @param onSuccess 成功回调，参数为 {@link PageResponse<Food>}
+     * @param onSuccess 成功回调，参数为 {@link PageResponse<FoodDetailDto>}
      * @param onError   失败回调，参数为错误信息字符串
      */
-    public void getFood(int page, int size,
-                        Consumer<ApiResponse<PageResponse<Food>>> onSuccess,
-                        Consumer<String> onError) {
+    public void getFoodPaged(int page, int size,
+                             Consumer<ApiResponse<PageResponse<FoodDetailDto>>> onSuccess,
+                             Consumer<String> onError) {
 
-        String path = "/api/food?page=" + page + "&size=" + size;
+        String path = "/api/food?page=" + page + "&size=" + size + "&sort=name,asc";
 
         boolean submitted = net.get(
                 path,
-                new TypeReference<ApiResponse<PageResponse<Food>>>() {},
+                new TypeReference<ApiResponse<PageResponse<FoodDetailDto>>>() {},
                 onSuccess,
                 onError
         );
@@ -61,17 +81,17 @@ public class FoodService {
      * 新增一条食物记录。
      *
      * @param request   请求体（会被序列化为 JSON）
-     * @param onSuccess 成功回调，参数为后端返回的 {@link ApiResponse<Food>}
+     * @param onSuccess 成功回调，参数为后端返回的 {@link ApiResponse<FoodDetailDto>}
      * @param onError   失败回调
      */
     public void addFood(FoodRequest request,
-                        Consumer<ApiResponse<Food>> onSuccess,
+                        Consumer<ApiResponse<FoodDetailDto>> onSuccess,
                         Consumer<String> onError) {
 
         net.post(
                 "/api/food",
                 request,
-                new TypeReference<ApiResponse<Food>>() {},
+                new TypeReference<ApiResponse<FoodDetailDto>>() {},
                 onSuccess,
                 onError
         );
@@ -82,12 +102,12 @@ public class FoodService {
     // ════════════════════════════════════════════════════════════════════
 
     public void updateFood(long id, FoodRequest request,
-                           Consumer<ApiResponse<Food>> onSuccess,
+                           Consumer<ApiResponse<FoodDetailDto>> onSuccess,
                            Consumer<String> onError) {
         net.put(
                 "/api/food/" + id,
                 request,
-                new TypeReference<ApiResponse<Food>>() {},
+                new TypeReference<ApiResponse<FoodDetailDto>>() {},
                 onSuccess,
                 onError
         );
@@ -108,27 +128,35 @@ public class FoodService {
         );
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    //  内部 DTO（实际项目请放到独立文件）
-    // ════════════════════════════════════════════════════════════════════
 
-    /** 食物实体（与后端 Food 对应） */
-    public static class Food {
-        public Long   id;
-        public String name;
-        public double calories;
-        // 按需添加字段 / getter / setter
+
+    /**
+     * 获取所有window列表（不分页）
+     * <p>GET /api/v1/foods/windows
+     */
+    public void getAllWindows(Consumer<ApiResponse<Dtos.WindowDto>> onSuccess,
+                              Consumer<String> onError) {
+        net.get(
+                "/api/v1/foods/windows",
+                new TypeReference<ApiResponse<Dtos.WindowDto>>() {
+                },
+                onSuccess,
+                onError
+        );
     }
 
-    /** 新增 / 修改食物的请求体 */
-    public static class FoodRequest {
-        public String name;
-        public double calories;
-
-        public FoodRequest() {}
-        public FoodRequest(String name, double calories) {
-            this.name     = name;
-            this.calories = calories;
-        }
+    /**
+     * 获取所有Tag列表（不分页），以DTO形式返回
+     * <p>GET /api/v1/foods/tags
+     */
+    public void getAllTags(Consumer<ApiResponse<Dtos.TagDto>> onSuccess,
+                           Consumer<String> onError) {
+        net.get(
+                "/api/v1/foods/tags",
+                new TypeReference<ApiResponse<Dtos.TagDto>>() {
+                },
+                onSuccess,
+                onError
+        );
     }
 }

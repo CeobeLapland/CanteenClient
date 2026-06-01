@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefWidth="1000.0" prefHeight="720.0"
+            style="-fx-background-color: #E3F2FD;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ceobe.canteenclient.controller.EatWhatController">
+
+    <!-- 左侧：食物大转盘 Canvas -->
+    <Canvas fx:id="wheelCanvas"
+            layoutX="50.0" layoutY="60.0"
+            width="600.0" height="600.0"/>
+
+    <!-- 右侧：功能面板 -->
+    <VBox fx:id="rightBox"
+          layoutX="700.0" layoutY="60.0"
+          prefWidth="250.0" prefHeight="600.0"
+          spacing="25.0"
+          style="-fx-alignment: CENTER;">
+
+        <!-- 标题 -->
+        <Label text="食物大转盘"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+
+        <!-- 信息预览框 -->
+        <Label text="抽取结果"
+               style="-fx-font-size: 16px; -fx-text-fill: #1565C0;"/>
+        <TextArea fx:id="resultArea"
+                  prefWidth="250.0" prefHeight="220.0"
+                  editable="false"
+                  style="-fx-font-size: 14px;
+                         -fx-background-color: white;
+                         -fx-border-color: #2196F3;
+                         -fx-border-width: 2px;
+                         -fx-text-fill: #0D47A1;"/>
+
+        <!-- 块数设置 -->
+        <HBox spacing="10.0" style="-fx-alignment: CENTER;">
+            <Label text="转盘块数："
+                   style="-fx-font-size: 14px; -fx-text-fill: #1976D2;"/>
+            <Spinner fx:id="sectionSpinner"
+                     prefWidth="80.0"
+                     style="-fx-border-color: #2196F3;"/>
+        </HBox>
+
+        <!-- 抽取按钮 -->
+        <Button fx:id="spinButton"
+                text="开始抽取"
+                prefWidth="180.0" prefHeight="50.0"
+                style="-fx-background-color: #1976D2;
+                       -fx-text-fill: white;
+                       -fx-font-size: 18px;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 8px;"
+        />
+    </VBox>
+
+</AnchorPane>
+<!--                onMouseEntered="this.setStyle('-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 8px;')"
+                onMouseExited="this.setStyle('-fx-background-color: #1976D2; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 8px;')"  -->

@@ -1,6 +1,7 @@
 package ceobe.canteenclient;
 
 import ceobe.canteenclient.controller.MainController;
+import ceobe.canteenclient.net.NetworkManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -37,6 +38,16 @@ public class MainApplication extends Application {
         stage.setScene(scene);
         //stage.setTitle("学校食堂数据库");
         stage.show();
+
+
+        NetworkManager.getInstance().init("http://localhost:8080");
+    }
+
+
+    @Override
+    public void stop() {
+        System.out.println("正在关闭学校食堂数据库...");
+        NetworkManager.getInstance().shutdown();
     }
 
     public static void main(String[] args) {

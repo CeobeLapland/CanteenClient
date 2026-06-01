@@ -1,9 +1,13 @@
 package ceobe.canteenclient.controller;
 
 import ceobe.canteenclient.entity.FoodItem;
+
 import ceobe.canteenclient.net.ApiResponse;
 import ceobe.canteenclient.net.FoodService;
 import ceobe.canteenclient.net.PageResponse;
+import ceobe.canteenclient.net.dto.Dtos;
+import ceobe.canteenclient.net.dto.Dtos.WindowDto;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -12,8 +16,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 import javafx.scene.Node;
 
@@ -22,7 +24,6 @@ import java.util.stream.Collectors;
 
 public class FoodController {
 
-    @FXML private ListView<String> tagListView;
     @FXML private TextField searchField;
     @FXML private ComboBox<String> campusBox;
     @FXML private ComboBox<String> canteenBox;
@@ -32,12 +33,18 @@ public class FoodController {
     @FXML private HBox pageBar;
 
     private MainController mainController;
+    private FoodService foodService = FoodService.getInstance();
+
+    private final int pageSize = 20;
+    private int currentPage = 1;
 
     private final ObservableList<FoodItem> allFoods = FXCollections.observableArrayList();
     private final ObservableList<FoodItem> filteredFoods = FXCollections.observableArrayList();
 
-    private final int pageSize = 20;
-    private int currentPage = 1;
+
+    private String selectedCampus, selectedCanteen, selectedFloor, selectedWindow;
+    private List<Dtos.WindowDto> allWindows = new ArrayList<>();
+
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
@@ -45,38 +52,333 @@ public class FoodController {
 
     @FXML
     private void initialize() {
-        setupTags();
-        setupFilters();
+        // 1. 初始化可见性：仅【校区】下拉框可见
+        resetAllComboBoxVisibility();
+        campusBox.setVisible(true);
+        // 2. 加载初始校区选项
+        loadCampusOptions();
+        // 3. 绑定所有下拉框的选择事件
+        bindSelectionEvents();
+
+
+        foodService.test(
+                (ApiResponse<String> resp) -> {
+                    if (resp.isSuccess()) {
+                        System.out.println("接口测试成功，响应数据：" + resp.getData());
+                    } else {
+                        System.err.println("接口测试失败，错误信息：" + resp.getMessage());
+                    }
+                },
+                (String errMsg) -> {
+                    System.err.println("接口测试请求错误，错误信息：" + errMsg);
+                }
+        );
+
+        initTags();
+
         buildMockData();
+
 
         applyFilters();
         renderPage(1);
     }
 
-    private void setupTags() {
-        tagListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        tagListView.setItems(FXCollections.observableArrayList(
+
+    //region 标签云相关
+    // ===================== FXML 节点 =====================
+    @FXML
+    private ScrollPane tagScrollPane;   // 滚动面板（纵向滚动）
+    @FXML
+    private FlowPane tagFlowPane;       // 自动换行面板（放标签按钮）
+
+    // ===================== 数据 =====================
+    private List<String> allTags = new ArrayList<>();  // 所有标签
+    private List<String> curTags = new ArrayList<>();  // 当前选中的标签
+    private List<Button> curTagButtons = new ArrayList<>(); // 当前标签按钮（用于样式切换）
+
+
+    public void initTags() {
+        // 1. 设置滚动面板：只纵向滚动，横向不滚动
+        tagScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tagScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+
+        // 2. FlowPane 自动换行配置
+        tagFlowPane.setHgap(8);    // 按钮横向间距
+        tagFlowPane.setVgap(8);    // 按钮纵向间距
+        tagFlowPane.setPrefWrapLength(320); // 自动换行宽度（和你面板宽度一致）
+
+        // 3. 测试数据（你可以替换成自己的）
+        allTags = List.of(
+                "早餐", "午餐", "晚餐", "小吃", "快餐", "麻辣烫", "麻辣香锅",
+                "清真", "面食", "米饭", "奶茶", "咖啡", "水果", "减脂餐",
+                "麻辣", "清淡", "油炸", "汤面", "炒饭", "盖浇饭", "包子粥铺",
                 "热销", "米饭", "面食", "粉类", "素食", "荤菜",
                 "辣味", "清淡", "早餐", "午餐", "晚餐", "饮品", "甜品"
-        ));
+        );
+
+        // 4. 渲染标签
+        renderTags();
     }
 
-    private void setupFilters() {
-        List<String> campuses = List.of("全部", "东校区", "西校区", "南校区", "北校区");
-        List<String> canteens = List.of("全部", "一食堂", "二食堂", "三食堂", "四食堂");
-        List<String> floors = List.of("全部", "1楼", "2楼", "3楼");
-        List<String> windows = List.of("全部", "A01", "A02", "B01", "B02", "C01", "C02");
+    // ===================== 核心：动态生成自适应宽度标签按钮 =====================
+    private void renderTags() {
+        tagFlowPane.getChildren().clear(); // 清空旧标签
 
-        campusBox.setItems(FXCollections.observableArrayList(campuses));
-        canteenBox.setItems(FXCollections.observableArrayList(canteens));
-        floorBox.setItems(FXCollections.observableArrayList(floors));
-        windowBox.setItems(FXCollections.observableArrayList(windows));
+        for (String tag : allTags) {
+            Button tagBtn = new Button(tag);
+            tagBtn.setStyle("""
+                    -fx-background-color: #f5f5f5;
+                    -fx-text-fill: #333;
+                    -fx-padding: 6 12;
+                    -fx-background-radius: 6;
+                    -fx-border-radius: 6;
+                    -fx-cursor: hand;
+                    """);
 
-        campusBox.getSelectionModel().selectFirst();
-        canteenBox.getSelectionModel().selectFirst();
-        floorBox.getSelectionModel().selectFirst();
-        windowBox.getSelectionModel().selectFirst();
+            // 自适应宽度（根据文字自动撑开，不固定宽度）
+            tagBtn.setPrefWidth(Button.USE_COMPUTED_SIZE);
+
+            // 点击事件：切换选中状态
+            tagBtn.setOnAction(e -> toggleTag(tagBtn, tag));
+
+            tagFlowPane.getChildren().add(tagBtn);
+        }
     }
+
+    // ===================== 标签选中/取消切换 =====================
+    private void toggleTag(Button btn, String tag) {
+        if (curTags.contains(tag)) {
+            // 取消选中
+            curTags.remove(tag);
+            curTagButtons.remove(btn);
+            btn.setStyle("""
+                    -fx-background-color: #f5f5f5;
+                    -fx-text-fill: #333;
+                    -fx-padding: 6 12;
+                    -fx-background-radius: 6;
+                    -fx-border-radius: 6;
+                    -fx-cursor: hand;
+                    """);
+        } else {
+            // 选中
+            curTags.add(tag);
+            curTagButtons.add(btn);
+            btn.setStyle("""
+                    -fx-background-color: #4285F4;
+                    -fx-text-fill: white;
+                    -fx-padding: 6 12;
+                    -fx-background-radius: 6;
+                    -fx-border-radius: 6;
+                    -fx-cursor: hand;
+                    """);
+        }
+    }
+
+    // ===================== 外部获取选中的标签 =====================
+    public List<String> getCurTags() {
+        return curTags;
+    }
+
+    // ===================== 外部设置标签数据（刷新用） =====================
+    public void setAllTags(List<String> allTags) {
+        this.allTags = allTags;
+        this.curTags.clear();
+        this.curTagButtons.clear();
+        renderTags();
+    }
+
+    // 清除所有标签选中状态
+    @FXML
+    private void clearTags() {
+        this.curTags.clear();
+        for (Button btn : curTagButtons) {
+            btn.setStyle("""
+                    -fx-background-color: #f5f5f5;
+                    -fx-text-fill: #333;
+                    -fx-padding: 6 12;
+                    -fx-background-radius: 6;
+                    -fx-border-radius: 6;
+                    -fx-cursor: hand;
+                    """);
+        }
+        this.curTagButtons.clear();
+    }
+    //endregion
+
+    //region 下拉框筛选相关
+    // ====================== 对外方法：设置数据源 ======================
+    // 外部加载完数据后调用此方法刷新筛选框
+    /*public void setWindowData(List<WindowDto> windowList) {
+        allWindows.clear();
+        allWindows.addAll(windowList);
+        loadCampusOptions();
+    }*/
+
+    // ====================== 核心：选项加载方法 ======================
+    /**
+     * 加载【校区】选项（初始加载）
+     */
+    private void loadCampusOptions() {
+        campusBox.getItems().clear();
+        campusBox.getItems().add("全部");
+        // 提取所有不重复校区（Stream去重，轻量高效）
+        List<String> campuses = allWindows.stream()
+                .map(WindowDto::getCampus)
+                .distinct()
+                .toList();
+        campusBox.getItems().addAll(campuses);
+        campusBox.setValue("全部");
+        selectedCampus = null;
+    }
+
+    /**
+     * 加载【食堂】选项（根据选中的校区）
+     */
+    private void loadCanteenOptions(String targetCampus) {
+        canteenBox.getItems().clear();
+        canteenBox.getItems().add("全部");
+        List<String> canteens = allWindows.stream()
+                .filter(dto -> targetCampus.equals(dto.getCampus()))
+                .map(WindowDto::getCanteen)
+                .distinct()
+                .toList();
+        canteenBox.getItems().addAll(canteens);
+        canteenBox.setValue("全部");
+        selectedCanteen = null;
+
+        // 重置后续控件
+        floorBox.setVisible(false);
+        windowBox.setVisible(false);
+        selectedFloor = null;
+        selectedWindow = null;
+    }
+
+    /**
+     * 加载【楼层】选项（根据选中的校区+食堂）
+     */
+    private void loadFloorOptions(String targetCampus, String targetCanteen) {
+        floorBox.getItems().clear();
+        floorBox.getItems().add("全部");
+        List<String> floors = allWindows.stream()
+                .filter(dto -> targetCampus.equals(dto.getCampus())
+                        && targetCanteen.equals(dto.getCanteen()))
+                .map(WindowDto::getFloor)
+                .distinct()
+                .toList();
+        floorBox.getItems().addAll(floors);
+        floorBox.setValue("全部");
+        selectedFloor = null;
+
+        // 重置后续控件
+        windowBox.setVisible(false);
+        selectedWindow = null;
+    }
+
+    /**
+     * 加载【窗口】选项（根据选中的校区+食堂+楼层）
+     */
+    private void loadWindowOptions(String targetCampus, String targetCanteen, String targetFloor) {
+        windowBox.getItems().clear();
+        windowBox.getItems().add("全部");
+        List<String> windows = allWindows.stream()
+                .filter(dto -> targetCampus.equals(dto.getCampus())
+                        && targetCanteen.equals(dto.getCanteen())
+                        && targetFloor.equals(dto.getFloor()))
+                .map(WindowDto::getName)
+                .distinct()
+                .toList();
+        windowBox.getItems().addAll(windows);
+        windowBox.setValue("全部");
+        selectedWindow = null;
+    }
+
+    // ====================== 核心：选择事件绑定 ======================
+    private void bindSelectionEvents() {
+        // 1. 校区选择事件
+        campusBox.setOnAction(e -> {
+            selectedCampus = "全部".equals(campusBox.getValue()) ? null : campusBox.getValue();
+            handleCampusChange();
+        });
+
+        // 2. 食堂选择事件
+        canteenBox.setOnAction(e -> {
+            selectedCanteen = "全部".equals(canteenBox.getValue()) ? null : canteenBox.getValue();
+            handleCanteenChange();
+        });
+
+        // 3. 楼层选择事件
+        floorBox.setOnAction(e -> {
+            selectedFloor = "全部".equals(floorBox.getValue()) ? null : floorBox.getValue();
+            handleFloorChange();
+        });
+
+        // 4. 窗口选择事件（无后续控件）
+        windowBox.setOnAction(e -> {
+            selectedWindow = "全部".equals(windowBox.getValue()) ? null : windowBox.getValue();
+        });
+    }
+
+    // ====================== 选择变更处理（显隐+逻辑） ======================
+    private void handleCampusChange() {
+        if (selectedCampus == null) {
+            // 选【全部】：隐藏所有后续控件
+            canteenBox.setVisible(false);
+            floorBox.setVisible(false);
+            windowBox.setVisible(false);
+            selectedCanteen = selectedFloor = selectedWindow = null;
+            return;
+        }
+        // 选中具体校区：显示食堂，加载对应数据
+        canteenBox.setVisible(true);
+        loadCanteenOptions(selectedCampus);
+    }
+
+    private void handleCanteenChange() {
+        if (selectedCanteen == null) {
+            // 选【全部】：隐藏楼层、窗口
+            floorBox.setVisible(false);
+            windowBox.setVisible(false);
+            selectedFloor = selectedWindow = null;
+            return;
+        }
+        // 选中具体食堂：显示楼层，加载对应数据
+        floorBox.setVisible(true);
+        loadFloorOptions(selectedCampus, selectedCanteen);
+    }
+
+    private void handleFloorChange() {
+        if (selectedFloor == null) {
+            // 选【全部】：隐藏窗口
+            windowBox.setVisible(false);
+            selectedWindow = null;
+            return;
+        }
+        // 选中具体楼层：显示窗口，加载对应数据
+        windowBox.setVisible(true);
+        loadWindowOptions(selectedCampus, selectedCanteen, selectedFloor);
+    }
+
+    // ====================== 工具方法 ======================
+    /**
+     * 重置所有下拉框为不可见
+     */
+    private void resetAllComboBoxVisibility() {
+        campusBox.setVisible(false);
+        canteenBox.setVisible(false);
+        floorBox.setVisible(false);
+        windowBox.setVisible(false);
+    }
+
+    // ====================== 对外获取选中结果 ======================
+    // 你可以通过这些getter获取最终筛选条件
+    public String getSelectedCampus() { return selectedCampus; }
+    public String getSelectedCanteen() { return selectedCanteen; }
+    public String getSelectedFloor() { return selectedFloor; }
+    public String getSelectedWindow() { return selectedWindow; }
+
+    // endregion
+
+
 
     private void buildMockData() {
         Random random = new Random(7);
@@ -97,7 +399,7 @@ public class FoodController {
                 List.of("早餐", "米饭")
         );
 
-        for (int i = 1; i <= 72; i++) {
+        for (int i = 1; i <= 36; i++) {
             String campus = campuses[i % campuses.length];
             String canteen = canteens[i % canteens.length];
             String floor = floors[i % floors.length];
@@ -116,51 +418,14 @@ public class FoodController {
         }
     }
 
-    @FXML
-    private void clearTags() {
-        tagListView.getSelectionModel().clearSelection();
-        handleSearch();
-    }
+
 
     @FXML
     private void handleSearch() {
-        applyFilters();
+        //applyFilters();
         renderPage(1);
     }
 
-    private void applyFilters() {
-        String keyword = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
-
-        String campus = campusBox.getValue();
-        String canteen = canteenBox.getValue();
-        String floor = floorBox.getValue();
-        String window = windowBox.getValue();
-
-        List<String> selectedTags = new ArrayList<>(tagListView.getSelectionModel().getSelectedItems());
-
-        List<FoodItem> result = allFoods.stream()
-                .filter(item -> {
-                    boolean keywordMatch = keyword.isBlank()
-                            || item.getName().toLowerCase(Locale.ROOT).contains(keyword)
-                            || item.getIntro().toLowerCase(Locale.ROOT).contains(keyword)
-                            || item.getLocation().toLowerCase(Locale.ROOT).contains(keyword)
-                            || item.getWindow().toLowerCase(Locale.ROOT).contains(keyword)
-                            || item.getTags().stream().anyMatch(tag -> tag.toLowerCase(Locale.ROOT).contains(keyword));
-
-                    boolean campusMatch = campus == null || "全部".equals(campus) || campus.equals(item.getCampus());
-                    boolean canteenMatch = canteen == null || "全部".equals(canteen) || canteen.equals(item.getCanteen());
-                    boolean floorMatch = floor == null || "全部".equals(floor) || floor.equals(item.getFloor());
-                    boolean windowMatch = window == null || "全部".equals(window) || window.equals(item.getWindow());
-
-                    boolean tagMatch = selectedTags.isEmpty()
-                            || item.getTags().stream().anyMatch(selectedTags::contains);
-
-                    return keywordMatch && campusMatch && canteenMatch && floorMatch && windowMatch && tagMatch;
-                })
-                .collect(Collectors.toList());
-
-        filteredFoods.setAll(result);
-    }
 
     private void renderPage(int page) {
         int totalPages = Math.max(1, (int) Math.ceil(filteredFoods.size() / (double) pageSize));
@@ -219,7 +484,8 @@ public class FoodController {
 
         card.setOnMouseClicked(e -> {
             if (mainController != null) {
-                mainController.showFoodDetail(item);
+                //mainController.showFoodDetail(item);
+                mainController.hadleFoodItemSelected(item);
             }
         });
 
@@ -253,6 +519,142 @@ public class FoodController {
         next.setOnAction(e -> renderPage(currentPage + 1));
 
         pageBar.getChildren().add(next);
+    }
+
+
+
+
+
+
+
+
+    private void applyFilters() {
+        String keyword = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
+
+        String campus = campusBox.getValue();
+        String canteen = canteenBox.getValue();
+        String floor = floorBox.getValue();
+        String window = windowBox.getValue();
+
+        List<String> selectedTags = curTags; //new ArrayList<>(tagListView.getSelectionModel().getSelectedItems());
+
+        List<FoodItem> result = allFoods.stream()
+                .filter(item -> {
+                    boolean keywordMatch = keyword.isBlank()
+                            || item.getName().toLowerCase(Locale.ROOT).contains(keyword)
+                            || item.getIntro().toLowerCase(Locale.ROOT).contains(keyword)
+                            || item.getLocation().toLowerCase(Locale.ROOT).contains(keyword)
+                            || item.getWindow().toLowerCase(Locale.ROOT).contains(keyword)
+                            || item.getTags().stream().anyMatch(tag -> tag.toLowerCase(Locale.ROOT).contains(keyword));
+
+                    boolean campusMatch = campus == null || "全部".equals(campus) || campus.equals(item.getCampus());
+                    boolean canteenMatch = canteen == null || "全部".equals(canteen) || canteen.equals(item.getCanteen());
+                    boolean floorMatch = floor == null || "全部".equals(floor) || floor.equals(item.getFloor());
+                    boolean windowMatch = window == null || "全部".equals(window) || window.equals(item.getWindow());
+
+                    boolean tagMatch = selectedTags.isEmpty()
+                            || item.getTags().stream().anyMatch(selectedTags::contains);
+
+                    return keywordMatch && campusMatch && canteenMatch && floorMatch && windowMatch && tagMatch;
+                })
+                .collect(Collectors.toList());
+
+        filteredFoods.setAll(result);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════════
+    //  示例 1：getFood —— 分页加载
+    // ════════════════════════════════════════════════════════════════════
+
+    /*private void loadPage(int page) {
+        //statusLabel.setText("加载中…");
+        foodService.getFoodPaged(
+                page,
+                pageSize,
+                // ✅ onSuccess —— 已在 FX 线程，可直接操作 UI
+                (ApiResponse<PageResponse<Dtos.FoodDetailDto>> resp) -> {
+                    if (resp.isSuccess() && resp.getData() != null) {
+                        PageResponse<Dtos.FoodDetailDto> pageData = resp.getData();
+
+                        allFoods.setAll(pageData.getContent());
+
+                        // 更新分页控件总页数
+                        pagination.setPageCount(Math.max(1, pageData.getTotalPages()));
+
+                        //statusLabel.setText("共 " + pageData.getTotalElements() + " 条记录");
+                        System.out.println("加载成功，当前页数据：" + pageData.getContent());
+                    } else {
+                        //statusLabel.setText("加载失败：" + resp.getMessage());
+                    }
+                },
+
+                // ❌ onError —— 同样在 FX 线程
+                (String errMsg) -> {
+                    statusLabel.setText("错误：" + errMsg);
+                    showAlert("加载失败", errMsg);
+                }
+        );
+    }*/
+
+    // ════════════════════════════════════════════════════════════════════
+    //  示例 2：addFood —— 表单提交
+    // ════════════════════════════════════════════════════════════════════
+
+    /*@FXML
+    private void onAddFoodButtonClick() {
+        String name     = nameField.getText().trim();
+        String calStr   = caloriesField.getText().trim();
+
+        // 简单前端校验
+        if (name.isEmpty() || calStr.isEmpty()) {
+            showAlert("提示", "请填写完整信息");
+            return;
+        }
+
+        double calories;
+        try {
+            calories = Double.parseDouble(calStr);
+        } catch (NumberFormatException e) {
+            showAlert("提示", "卡路里格式不正确");
+            return;
+        }
+
+        FoodService.FoodRequest req = new FoodService.FoodRequest(name, calories);
+        statusLabel.setText("提交中…");
+
+        foodService.addFood(
+                req,
+
+                // ✅ onSuccess
+                (ApiResponse<FoodService.Food> resp) -> {
+                    if (resp.isSuccess()) {
+                        statusLabel.setText("添加成功：" + resp.getData().name);
+                        nameField.clear();
+                        caloriesField.clear();
+                        loadPage(0); // 刷新列表
+                    } else {
+                        statusLabel.setText("添加失败：" + resp.getMessage());
+                    }
+                },
+
+                // ❌ onError
+                (String errMsg) -> {
+                    statusLabel.setText("错误：" + errMsg);
+                    showAlert("添加失败", errMsg);
+                }
+        );
+    }*/
+
+    // ════════════════════════════════════════════════════════════════════
+    //  工具
+    // ════════════════════════════════════════════════════════════════════
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
 }

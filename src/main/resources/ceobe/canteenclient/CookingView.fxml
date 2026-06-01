@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="rootPane"
+            prefWidth="1000.0"
+            prefHeight="680.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ceobe.canteenclient.controller.CookingController"
+            style="-fx-background-color: #f4f8ff;">
+
+    <left>
+        <VBox prefWidth="380.0"
+              spacing="12"
+              style="-fx-padding: 16; -fx-background-color: #eef5ff; -fx-border-color: #cfe0ff; -fx-border-width: 0 1 0 0;">
+            <StackPane fx:id="potStack"
+                       prefHeight="330.0"
+                       style="-fx-background-color: linear-gradient(to bottom, #fdfefe, #eaf3ff);
+                              -fx-border-color: #8bb7ff;
+                              -fx-border-width: 2;
+                              -fx-border-radius: 18;
+                              -fx-background-radius: 18;">
+                <VBox spacing="10" alignment="TOP_LEFT" fillWidth="true">
+                    <Label text="锅"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1f4f99;" />
+                    <FlowPane fx:id="potFlow"
+                              hgap="10"
+                              vgap="10"
+                              prefWrapLength="340.0"
+                              style="-fx-padding: 8;" />
+                </VBox>
+            </StackPane>
+
+            <Button fx:id="startCookButton"
+                    text="开始做饭"
+                    maxWidth="1.7976931348623157E308"
+                    onAction="#onStartCook"
+                    style="-fx-background-color: #3f8cff;
+                           -fx-text-fill: white;
+                           -fx-font-size: 15px;
+                           -fx-font-weight: bold;
+                           -fx-background-radius: 14;
+                           -fx-padding: 10 18 10 18;
+                           -fx-cursor: hand;" />
+
+            <TextArea fx:id="recipeArea"
+                      prefHeight="260.0"
+                      wrapText="true"
+                      editable="false"
+                      promptText="这里先放食谱占位内容，点击“开始做饭”后生成。"
+                      style="-fx-background-radius: 14;
+                             -fx-border-radius: 14;
+                             -fx-border-color: #cfe0ff;
+                             -fx-focus-color: #8bb7ff;
+                             -fx-highlight-fill: #cfe0ff;" />
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="12" style="-fx-padding: 16 16 16 0;">
+            <ScrollPane fitToHeight="true"
+                        fitToWidth="true"
+                        hbarPolicy="AS_NEEDED"
+                        vbarPolicy="NEVER">
+
+                <content>
+                    <FlowPane fx:id="tagFlow"
+                              hgap="8"
+                              vgap="8"
+                              prefWrapLength="560"/>
+                </content>
+
+            </ScrollPane>
+
+            <ScrollPane fx:id="ingredientScroll"
+                        fitToWidth="true"
+                        pannable="true"
+                        hbarPolicy="NEVER"
+                        vbarPolicy="AS_NEEDED"
+                        style="-fx-background: transparent;
+                               -fx-background-color: transparent;
+                               -fx-border-color: #cfe0ff;
+                               -fx-border-radius: 16;
+                               -fx-background-radius: 16;">
+                <content>
+                    <FlowPane fx:id="ingredientFlow"
+                              hgap="10"
+                              vgap="10"
+                              prefWrapLength="560.0"
+                              style="-fx-padding: 12;" />
+                </content>
+            </ScrollPane>
+
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button fx:id="showCustomInputButton"
+                        text="+"
+                        onAction="#onShowCustomInput"
+                        style="-fx-background-color: #3f8cff;
+                               -fx-text-fill: white;
+                               -fx-font-size: 18px;
+                               -fx-font-weight: bold;
+                               -fx-background-radius: 14;
+                               -fx-min-width: 42;
+                               -fx-min-height: 42;
+                               -fx-cursor: hand;" />
+
+                <HBox fx:id="customInputBar"
+                      spacing="8"
+                      visible="false"
+                      managed="false">
+                    <TextField fx:id="customIngredientField"
+                               promptText="输入新食材名称"
+                               HBox.hgrow="ALWAYS"
+                               prefWidth="220.0"
+                               style="-fx-background-radius: 14;
+                                      -fx-border-radius: 14;
+                                      -fx-border-color: #cfe0ff;
+                                      -fx-focus-color: #8bb7ff;" />
+                    <Button text="确定"
+                            onAction="#onConfirmCustomIngredient"
+                            style="-fx-background-color: #3f8cff;
+                                   -fx-text-fill: white;
+                                   -fx-font-weight: bold;
+                                   -fx-background-radius: 14;
+                                   -fx-padding: 8 16 8 16;
+                                   -fx-cursor: hand;" />
+                </HBox>
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>
