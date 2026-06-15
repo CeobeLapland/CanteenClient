@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -27,7 +28,7 @@ public class MainApplication extends Application {
             return;
         }
 
-        BorderPane root = mainLoader.load();
+        StackPane root = mainLoader.load();
 
         MainController controller = mainLoader.getController();
         controller.setStage(stage);
@@ -40,7 +41,10 @@ public class MainApplication extends Application {
         stage.show();
 
 
-        NetworkManager.getInstance().init("http://localhost:8080");
+        //NetworkManager.getInstance().init("http://localhost:8080");
+        NetworkManager.getInstance().init("http://10.194.195.211:8080");
+        //10.194.195.211
+        //String baseUrl = "http://192.168.1.100:8080/api";
     }
 
 

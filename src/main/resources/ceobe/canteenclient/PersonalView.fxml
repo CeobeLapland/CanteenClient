@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ceobe.canteenclient.controller.PersonalController"
+            fitToWidth="true" fitToHeight="true" pannable="true"
+            prefWidth="1000.0" prefHeight="720.0"
+            style="-fx-background: #f6f9ff; -fx-border-color: transparent;">
+<content>
+    <VBox fx:id="pageRoot"
+          prefWidth="1000.0"
+          spacing="18.0"
+          style="-fx-background-color:#f6f9ff;">
+        <children>
+
+            <!-- 顶部：右上角按钮 -->
+            <HBox alignment="CENTER_RIGHT" spacing="12.0">
+                <children>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="设置"
+                            onAction="#handleSettings"
+                            style="-fx-background-color:#5c8dff; -fx-text-fill:white; -fx-background-radius:14; -fx-border-radius:14; -fx-padding:8 18 8 18;"/>
+                    <Button text="管理员"
+                            onAction="#handleAdmin"
+                            style="-fx-background-color:#6ea8ff; -fx-text-fill:white; -fx-background-radius:14; -fx-border-radius:14; -fx-padding:8 18 8 18;"/>
+                </children>
+            </HBox>
+
+            <!-- 个人信息卡片 -->
+            <VBox spacing="16.0"
+                  style="-fx-background-color:white; -fx-background-radius:20; -fx-border-radius:20; -fx-border-color:#dbe7ff; -fx-padding:18;">
+                <children>
+                    <HBox spacing="18.0" alignment="CENTER_LEFT">
+                        <children>
+                            <StackPane fx:id="avatarPane"
+                                       prefWidth="96.0" prefHeight="96.0"
+                                       onMouseClicked="#handleModify"
+                                       style="-fx-background-color:#eaf1ff; -fx-background-radius:48; -fx-border-radius:48; -fx-border-color:#bcd3ff; -fx-cursor:hand;">
+                                <children>
+                                    <ImageView fx:id="avatarImage"
+                                               fitWidth="96.0" fitHeight="96.0"
+                                               preserveRatio="true"
+                                               smooth="true" />
+                                    <Label fx:id="avatarHint"
+                                           text="头像"
+                                           style="-fx-text-fill:#6f8fd9; -fx-font-size:18px; -fx-font-weight:bold;"/>
+                                </children>
+                            </StackPane>
+
+                            <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                                <children>
+                                    <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Label text="名称：" style="-fx-text-fill:#6b7a99; -fx-font-size:14px;"/>
+                                            <Label fx:id="nameLabel" text="小刻" style="-fx-text-fill:#1f2d4d; -fx-font-size:20px; -fx-font-weight:bold;"/>
+                                            <Button text="修改"
+                                                    onAction="#handleModify"
+                                                    style="-fx-background-color:#5c8dff; -fx-text-fill:white; -fx-background-radius:12; -fx-border-radius:12; -fx-padding:6 14 6 14;"/>
+                                        </children>
+                                    </HBox>
+
+                                    <GridPane hgap="18" vgap="10">
+                                        <children>
+                                            <Label text="UID：" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill:#6b7a99;"/>
+                                            <Label fx:id="uidLabel" text="UID-10001" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill:#1f2d4d;"/>
+                                            <Label text="加入时间：" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill:#6b7a99;"/>
+                                            <Label fx:id="joinTimeLabel" text="2025-01-01" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill:#1f2d4d;"/>
+                                            <Label text="权限：" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill:#6b7a99;"/>
+                                            <Label fx:id="permissionLabel" text="普通用户" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill:#1f2d4d;"/>
+                                        </children>
+                                    </GridPane>
+                                </children>
+                            </VBox>
+                        </children>
+                    </HBox>
+
+                    <!-- 四个数据 -->
+                    <GridPane hgap="14" vgap="14">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="25"/>
+                            <ColumnConstraints percentWidth="25"/>
+                            <ColumnConstraints percentWidth="25"/>
+                            <ColumnConstraints percentWidth="25"/>
+                        </columnConstraints>
+                        <children>
+                            <VBox GridPane.columnIndex="0"
+                                  alignment="CENTER"
+                                  spacing="6"
+                                  style="-fx-background-color:#f6f9ff; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:18;">
+                                <children>
+                                    <Label text="发帖量" style="-fx-text-fill:#6b7a99;"/>
+                                    <Label fx:id="postCountLabel" text="0" style="-fx-text-fill:#2b4ea2; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                                </children>
+                            </VBox>
+
+                            <VBox GridPane.columnIndex="1"
+                                  alignment="CENTER"
+                                  spacing="6"
+                                  style="-fx-background-color:#f6f9ff; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:18;">
+                                <children>
+                                    <Label text="浏览量" style="-fx-text-fill:#6b7a99;"/>
+                                    <Label fx:id="viewCountLabel" text="0" style="-fx-text-fill:#2b4ea2; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                                </children>
+                            </VBox>
+
+                            <VBox GridPane.columnIndex="2"
+                                  alignment="CENTER"
+                                  spacing="6"
+                                  style="-fx-background-color:#f6f9ff; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:18;">
+                                <children>
+                                    <Label text="点赞量" style="-fx-text-fill:#6b7a99;"/>
+                                    <Label fx:id="likeCountLabel" text="0" style="-fx-text-fill:#2b4ea2; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                                </children>
+                            </VBox>
+
+                            <VBox GridPane.columnIndex="3"
+                                  alignment="CENTER"
+                                  spacing="6"
+                                  style="-fx-background-color:#f6f9ff; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:18;">
+                                <children>
+                                    <Label text="评论量" style="-fx-text-fill:#6b7a99;"/>
+                                    <Label fx:id="commentCountLabel" text="0" style="-fx-text-fill:#2b4ea2; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                                </children>
+                            </VBox>
+                        </children>
+                    </GridPane>
+                </children>
+            </VBox>
+
+            <!-- 下半部分的三个栏 -->
+            <HBox spacing="14.0">
+                <children>
+                    <Button text="我发的"
+                            onAction="#handleMyPosts"
+                            prefWidth="310"
+                            style="-fx-background-color:#5c8dff; -fx-text-fill:white; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:12 0 12 0;"/>
+                    <Button text="历史浏览"
+                            onAction="#handleHistory"
+                            prefWidth="310"
+                            style="-fx-background-color:#7aa7ff; -fx-text-fill:white; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:12 0 12 0;"/>
+                    <Button text="收藏"
+                            onAction="#handleFavorites"
+                            prefWidth="310"
+                            style="-fx-background-color:#91b9ff; -fx-text-fill:white; -fx-background-radius:16; -fx-border-radius:16; -fx-padding:12 0 12 0;"/>
+                </children>
+            </HBox>
+
+        </children>
+    </VBox>
+</content>
+</ScrollPane>

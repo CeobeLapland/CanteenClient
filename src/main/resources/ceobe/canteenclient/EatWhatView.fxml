@@ -3,67 +3,108 @@
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefWidth="1000.0" prefHeight="720.0"
-            style="-fx-background-color: #E3F2FD;"
+<BorderPane prefHeight="720.0" prefWidth="1000.0"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ceobe.canteenclient.controller.EatWhatController">
+            fx:controller="ceobe.canteenclient.controller.EatWhatController"
+            style="-fx-background-color: linear-gradient(to bottom right, #EAF4FF, #F8FBFF);">
 
-    <!-- 左侧：食物大转盘 Canvas -->
-    <Canvas fx:id="wheelCanvas"
-            layoutX="50.0" layoutY="60.0"
-            width="600.0" height="600.0"/>
+    <left>
+        <VBox spacing="14" prefWidth="650.0" BorderPane.alignment="CENTER"
+              style="-fx-padding: 20;">
+            <StackPane alignment="CENTER"
+                       style="-fx-background-color: rgba(255,255,255,0.82);
+                              -fx-background-radius: 24;
+                              -fx-border-color: #CFE4FF;
+                              -fx-border-radius: 24;
+                              -fx-border-width: 1;">
+                <Canvas fx:id="wheelCanvas" width="440.0" height="440.0"
+                        onMouseClicked="#handleWheelClick"/>
+            </StackPane>
 
-    <!-- 右侧：功能面板 -->
-    <VBox fx:id="rightBox"
-          layoutX="700.0" layoutY="60.0"
-          prefWidth="250.0" prefHeight="600.0"
-          spacing="25.0"
-          style="-fx-alignment: CENTER;">
+            <HBox spacing="12" alignment="CENTER_LEFT"
+                  style="-fx-background-color: rgba(255,255,255,0.72);
+                         -fx-background-radius: 18;
+                         -fx-padding: 12 14 12 14;
+                         -fx-border-color: #D7E8FF;
+                         -fx-border-radius: 18;">
+                <Button fx:id="drawButton" text="抽取" onAction="#handleDraw"
+                        prefWidth="120.0"
+                        style="-fx-background-color: linear-gradient(to bottom, #2F80ED, #6AAEFF);
+                               -fx-text-fill: white;
+                               -fx-background-radius: 16;
+                               -fx-font-size: 15px;
+                               -fx-font-weight: bold;"/>
+                <Label text="分块数量"
+                       style="-fx-text-fill: #24507A; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Spinner fx:id="sectorSpinner" prefWidth="105.0"/>
+            </HBox>
 
-        <!-- 标题 -->
-        <Label text="食物大转盘"
-               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+            <VBox spacing="8"
+                  style="-fx-background-color: rgba(255,255,255,0.72);
+                         -fx-background-radius: 18;
+                         -fx-padding: 12 14 14 14;
+                         -fx-border-color: #D7E8FF;
+                         -fx-border-radius: 18;">
+                <Label text="结果预览"
+                       style="-fx-text-fill: #24507A; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <TextArea fx:id="resultPreviewArea" editable="false" wrapText="true"
+                          prefHeight="180.0"
+                          style="-fx-control-inner-background: #F7FBFF;
+                                 -fx-background-radius: 14;
+                                 -fx-border-radius: 14;
+                                 -fx-border-color: #D7E8FF;
+                                 -fx-font-size: 13px;"/>
+            </VBox>
+        </VBox>
+    </left>
 
-        <!-- 信息预览框 -->
-        <Label text="抽取结果"
-               style="-fx-font-size: 16px; -fx-text-fill: #1565C0;"/>
-        <TextArea fx:id="resultArea"
-                  prefWidth="250.0" prefHeight="220.0"
-                  editable="false"
-                  style="-fx-font-size: 14px;
-                         -fx-background-color: white;
-                         -fx-border-color: #2196F3;
-                         -fx-border-width: 2px;
-                         -fx-text-fill: #0D47A1;"/>
+    <right>
+        <VBox spacing="12" prefWidth="320.0" BorderPane.alignment="CENTER"
+              style="-fx-padding: 20;
+                     -fx-background-color: rgba(255,255,255,0.40);">
+            <Label text="食物 Tags"
+                   style="-fx-text-fill: #24507A; -fx-font-size: 20px; -fx-font-weight: bold;"/>
 
-        <!-- 块数设置 -->
-        <HBox spacing="10.0" style="-fx-alignment: CENTER;">
-            <Label text="转盘块数："
-                   style="-fx-font-size: 14px; -fx-text-fill: #1976D2;"/>
-            <Spinner fx:id="sectionSpinner"
-                     prefWidth="80.0"
-                     style="-fx-border-color: #2196F3;"/>
-        </HBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        prefHeight="580.0"
+                        style="-fx-background-color: transparent;
+                               -fx-background: transparent;
+                               -fx-border-color: transparent;">
+                <content>
+                    <FlowPane fx:id="tagFlowPane" hgap="10" vgap="10"
+                              prefWrapLength="260.0"
+                              style="-fx-padding: 10;"/>
+                </content>
+            </ScrollPane>
 
-        <!-- 抽取按钮 -->
-        <Button fx:id="spinButton"
-                text="开始抽取"
-                prefWidth="180.0" prefHeight="50.0"
-                style="-fx-background-color: #1976D2;
-                       -fx-text-fill: white;
-                       -fx-font-size: 18px;
-                       -fx-font-weight: bold;
-                       -fx-background-radius: 8px;"
-        />
-    </VBox>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button fx:id="confirmButton" text="确定" onAction="#handleConfirmTags"
+                        prefWidth="90.0"
+                        style="-fx-background-color: linear-gradient(to bottom, #2F80ED, #6AAEFF);
+                               -fx-text-fill: white;
+                               -fx-background-radius: 16;
+                               -fx-font-size: 14px;
+                               -fx-font-weight: bold;"/>
+                <Button fx:id="clearButton" text="清空" onAction="#handleClearTags"
+                        prefWidth="90.0"
+                        style="-fx-background-color: #D9E9FF;
+                               -fx-text-fill: #24507A;
+                               -fx-background-radius: 16;
+                               -fx-font-size: 14px;
+                               -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </right>
 
-</AnchorPane>
-<!--                onMouseEntered="this.setStyle('-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 8px;')"
-                onMouseExited="this.setStyle('-fx-background-color: #1976D2; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 8px;')"  -->
+</BorderPane>

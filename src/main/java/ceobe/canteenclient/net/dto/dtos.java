@@ -1,6 +1,9 @@
 package ceobe.canteenclient.net.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +15,7 @@ import java.util.Set;
  */
 public class Dtos {
 
+    @Data
     public static class UserDto {
         private Long id;
         private String name;
@@ -22,27 +26,29 @@ public class Dtos {
 
 
 
-
+    @Data
     public static class FoodSummaryDto {
         private Long id;
         private String name;
         private Integer price;
-        private String imageUrl;
-        // 新增简要字段，方便客户端列表展示
+
         private String campus;
         private String canteen;
         private Float averageRating;
     }
 
 
-
+    @Data
     public static class FoodDetailDto {
         private Long id;
         private String name;
         private String description;
         private Integer price;
-        private String imageUrl;
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime createdAt;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime updatedAt;
 
         // 新增详细信息字段
         private String campus;
@@ -50,16 +56,15 @@ public class Dtos {
         private String floor;
         private String window;
         private String sellTime;
+
         private List<String> tags;
         private Float averageRating;
         private Integer ratingCount;
 
-        /** 该菜品关联的帖子数量（统计信息） */
-        private int postCount;
     }
 
 
-
+    @Data
     public static class PostSummaryDto {
         private Long id;
         private String title;
@@ -67,12 +72,13 @@ public class Dtos {
         private Integer viewCount;
         private Integer likeCount;
         private UserDto author;
-        private List<FoodSummaryDto> foods;
+        private List<String> foods;
         private int commentCount;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime createdAt;
     }
 
-
+    @Data
     public static class PostDetailDto {
         private Long id;
         private String title;
@@ -90,7 +96,7 @@ public class Dtos {
 
 
 
-
+    @Data
     public static class CommentDto {
         private Long id;
         private String content;
@@ -105,32 +111,26 @@ public class Dtos {
 
 
 
-
-    public static class WindowDto {
+    @Data
+    public static class WindowSearchDto {
         private String name;
 
         private String floor;
         private String canteen;
         private String campus;
 
-        // getters
-        public String getName() {
-            return name;
-        }
-        public String getFloor() {
-            return floor;
-        }
-        public String getCanteen() {
-            return canteen;
-        }
-        public String getCampus() {
-            return campus;
-        }
     }
 
 
-
+    @Data
     public static class TagDto {
+        private Long id;
+        private String name;
+    }
+
+    @Data
+    public static class SeasoningDto {
+        private Long id;
         private String name;
     }
 }

@@ -1,15 +1,14 @@
 package ceobe.canteenclient.controller;
 
+import ceobe.canteenclient.entity.ConvertUtil;
 import ceobe.canteenclient.entity.FoodItem;
 
 import ceobe.canteenclient.net.ApiResponse;
-import ceobe.canteenclient.net.FoodService;
 import ceobe.canteenclient.net.PageResponse;
+import ceobe.canteenclient.net.service.FoodService;
 import ceobe.canteenclient.net.dto.Dtos;
-import ceobe.canteenclient.net.dto.Dtos.WindowDto;
+import ceobe.canteenclient.net.dto.Dtos.WindowSearchDto;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,7 +19,6 @@ import javafx.scene.layout.*;
 import javafx.scene.Node;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FoodController {
 
@@ -38,12 +36,16 @@ public class FoodController {
     private final int pageSize = 20;
     private int currentPage = 1;
 
-    private final ObservableList<FoodItem> allFoods = FXCollections.observableArrayList();
-    private final ObservableList<FoodItem> filteredFoods = FXCollections.observableArrayList();
+    private int curTotalPages = 1;
+
+    //private final ObservableList<FoodItem> allFoods = FXCollections.observableArrayList();
+    //private final ObservableList<FoodItem> filteredFoods = FXCollections.observableArrayList();
+    //想了想还是先不在本地内存里存了，直接每次请求接口获取最新数据比较好，并且只请求当页数据，后端分页已经做好了
+    private final List<FoodItem> curFoods = new ArrayList<>();
 
 
     private String selectedCampus, selectedCanteen, selectedFloor, selectedWindow;
-    private List<Dtos.WindowDto> allWindows = new ArrayList<>();
+    private List<WindowSearchDto> allWindows = new ArrayList<>();
 
 
     public void setMainController(MainController mainController) {
@@ -76,10 +78,10 @@ public class FoodController {
 
         initTags();
 
-        buildMockData();
+        //buildMockData();
 
 
-        applyFilters();
+        //applyFilters();
         renderPage(1);
     }
 
@@ -208,7 +210,7 @@ public class FoodController {
     //region 下拉框筛选相关
     // ====================== 对外方法：设置数据源 ======================
     // 外部加载完数据后调用此方法刷新筛选框
-    /*public void setWindowData(List<WindowDto> windowList) {
+    /*public void setWindowData(List<WindowSearchDto> windowList) {
         allWindows.clear();
         allWindows.addAll(windowList);
         loadCampusOptions();
@@ -223,7 +225,7 @@ public class FoodController {
         campusBox.getItems().add("全部");
         // 提取所有不重复校区（Stream去重，轻量高效）
         List<String> campuses = allWindows.stream()
-                .map(WindowDto::getCampus)
+                .map(WindowSearchDto::getCampus)
                 .distinct()
                 .toList();
         campusBox.getItems().addAll(campuses);
@@ -239,7 +241,7 @@ public class FoodController {
         canteenBox.getItems().add("全部");
         List<String> canteens = allWindows.stream()
                 .filter(dto -> targetCampus.equals(dto.getCampus()))
-                .map(WindowDto::getCanteen)
+                .map(Dtos.WindowSearchDto::getCanteen)
                 .distinct()
                 .toList();
         canteenBox.getItems().addAll(canteens);
@@ -262,7 +264,7 @@ public class FoodController {
         List<String> floors = allWindows.stream()
                 .filter(dto -> targetCampus.equals(dto.getCampus())
                         && targetCanteen.equals(dto.getCanteen()))
-                .map(WindowDto::getFloor)
+                .map(WindowSearchDto::getFloor)
                 .distinct()
                 .toList();
         floorBox.getItems().addAll(floors);
@@ -284,7 +286,7 @@ public class FoodController {
                 .filter(dto -> targetCampus.equals(dto.getCampus())
                         && targetCanteen.equals(dto.getCanteen())
                         && targetFloor.equals(dto.getFloor()))
-                .map(WindowDto::getName)
+                .map(Dtos.WindowSearchDto::getName)
                 .distinct()
                 .toList();
         windowBox.getItems().addAll(windows);
@@ -380,7 +382,7 @@ public class FoodController {
 
 
 
-    private void buildMockData() {
+    /*private void buildMockData() {
         Random random = new Random(7);
 
         String[] campuses = {"东校区", "西校区", "南校区", "北校区"};
@@ -409,14 +411,14 @@ public class FoodController {
             String location = campus + " · " + canteen + " · " + floor + " · " + window;
             double price = 6.0 + (i % 12) * 1.5;
             double score = 3.5 + (random.nextInt(16) / 10.0);
-            String imagePath = null; // 后面你接数据库后可替换成真实图片路径
+            //String imagePath = null; // 后面你接数据库后可替换成真实图片路径
             List<String> tags = new ArrayList<>(tagPool.get(i % tagPool.size()));
 
             allFoods.add(new FoodItem(
-                    name, intro, campus, canteen, floor, window, location, imagePath, price, score, tags
+                    null, name, intro, (int)(price * 100), campus, canteen, floor, window, location, null, score, 0, tags, null, null
             ));
         }
-    }
+    }*/
 
 
 
@@ -428,26 +430,49 @@ public class FoodController {
 
 
     private void renderPage(int page) {
-        int totalPages = Math.max(1, (int) Math.ceil(filteredFoods.size() / (double) pageSize));
-        currentPage = Math.min(Math.max(page, 1), totalPages);
+        //int totalPages = Math.max(1, (int) Math.ceil(filteredFoods.size() / (double) pageSize));
+        //currentPage = Math.min(Math.max(page, 1), totalPages);
 
+        //现在不用示例数据了，该调用后端的API了，每次请求当页数据，后端分页已经做好了
+        foodService.getFoodPaged(
+                page - 1, // 后端页码从0开始
+                pageSize,
+                (ApiResponse<PageResponse<Dtos.FoodDetailDto>> resp) -> {
+                    if (resp.isSuccess() && resp.getData() != null) {
+                        PageResponse<Dtos.FoodDetailDto> pageData = resp.getData();
+                        List<FoodItem> foods = pageData.getContent().stream()
+                                .map(ConvertUtil::dtoToItem)
+                                .toList();
+                        curFoods.clear();
+                        curFoods.addAll(foods);
+
+                        currentPage = page;
+                        curTotalPages = pageData.getTotalPages();
+
+                        updateFoodList();
+                        buildPageBar(curTotalPages);
+                    } else {
+                        showAlert("加载失败", resp.getMessage());
+                    }
+                },
+                (String errMsg) -> {
+                    showAlert("加载失败", errMsg);
+                });
+
+    }
+
+    private void updateFoodList() {
         foodListBox.getChildren().clear();
 
-        int fromIndex = (currentPage - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, filteredFoods.size());
-        List<FoodItem> pageItems = filteredFoods.subList(Math.min(fromIndex, filteredFoods.size()), toIndex);
-
-        for (FoodItem item : pageItems) {
+        for (FoodItem item : curFoods) {
             foodListBox.getChildren().add(createFoodCard(item));
         }
 
-        if (pageItems.isEmpty()) {
+        if (curFoods.isEmpty()) {
             Label empty = new Label("没有找到符合条件的食物");
             empty.setStyle("-fx-text-fill: #5f7290; -fx-font-size: 16px;");
             foodListBox.getChildren().add(empty);
         }
-
-        buildPageBar(totalPages);
     }
 
     private Node createFoodCard(FoodItem item) {
@@ -469,7 +494,8 @@ public class FoodController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label price = new Label(String.format("￥%.1f", item.getPrice()));
+        //Label price = new Label(String.format("￥%.1f", item.getPrice()));
+        Label price = new Label(String.format("￥%.2f", item.getPrice() / 100.0));
         price.getStyleClass().add("card-meta");
 
         top.getChildren().addAll(name, spacer, score, price);
@@ -509,7 +535,10 @@ public class FoodController {
             if (i == currentPage) {
                 pageBtn.getStyleClass().add("page-btn-active");
             }
-            pageBtn.setOnAction(e -> renderPage(pageNo));
+
+            pageBtn.setOnAction(e ->
+                    renderPage(pageNo));
+
             pageBar.getChildren().add(pageBtn);
         }
 
@@ -528,7 +557,7 @@ public class FoodController {
 
 
 
-    private void applyFilters() {
+    /*private void applyFilters() {
         String keyword = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
 
         String campus = campusBox.getValue();
@@ -542,7 +571,7 @@ public class FoodController {
                 .filter(item -> {
                     boolean keywordMatch = keyword.isBlank()
                             || item.getName().toLowerCase(Locale.ROOT).contains(keyword)
-                            || item.getIntro().toLowerCase(Locale.ROOT).contains(keyword)
+                            || item.getDescription().toLowerCase(Locale.ROOT).contains(keyword)
                             || item.getLocation().toLowerCase(Locale.ROOT).contains(keyword)
                             || item.getWindow().toLowerCase(Locale.ROOT).contains(keyword)
                             || item.getTags().stream().anyMatch(tag -> tag.toLowerCase(Locale.ROOT).contains(keyword));
@@ -560,7 +589,7 @@ public class FoodController {
                 .collect(Collectors.toList());
 
         filteredFoods.setAll(result);
-    }
+    }*/
 
 
     // ════════════════════════════════════════════════════════════════════
@@ -620,7 +649,7 @@ public class FoodController {
             return;
         }
 
-        FoodService.FoodRequest req = new FoodService.FoodRequest(name, calories);
+        FoodService.CreateFoodRequest req = new FoodService.CreateFoodRequest(name, calories);
         statusLabel.setText("提交中…");
 
         foodService.addFood(

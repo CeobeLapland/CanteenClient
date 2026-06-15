@@ -8,6 +8,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.util.function.Consumer;
+
 public class FoodDetailController {
 
     @FXML private ImageView foodImage;
@@ -28,12 +30,13 @@ public class FoodDetailController {
     public void setFoodItem(FoodItem item) {
         nameLabel.setText(item.getName());
         locationLabel.setText("地点：" + item.getLocation());
-        priceLabel.setText(String.format("价格：￥%.1f", item.getPrice()));
+        //priceLabel.setText(String.format("价格：￥%.1f", item.getPrice()));
+        priceLabel.setText(String.format("价格：￥%d", item.getPrice()));
         scoreLabel.setText(String.format("评分：%.1f / 5.0", item.getScore()));
         tagLabel.setText("标签：" + item.getTagsText());
-        introArea.setText(item.getIntro());
+        introArea.setText(item.getDescription());
 
-        if (item.getImagePath() != null && !item.getImagePath().isBlank()) {
+        /*if (item.getImagePath() != null && !item.getImagePath().isBlank()) {
             try {
                 Image image = new Image(getClass().getResourceAsStream(item.getImagePath()));
                 foodImage.setImage(image);
@@ -42,16 +45,17 @@ public class FoodDetailController {
                 foodImage.setImage(null);
                 imagePlaceholder.setVisible(true);
             }
-        } else {
+        } else {*/
             foodImage.setImage(null);
             imagePlaceholder.setVisible(true);
-        }
+        //}
     }
 
     @FXML
     private void handleBack() {
         if (mainController != null) {
-            mainController.showFoodPanel();
+            //mainController.showFoodPanel();
+            mainController.switchPanel(null, null, false);
         }
     }
 }

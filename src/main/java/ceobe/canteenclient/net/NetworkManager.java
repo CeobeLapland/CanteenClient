@@ -3,6 +3,8 @@ package ceobe.canteenclient.net;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.application.Platform;
 
 import java.net.URI;
@@ -66,7 +68,9 @@ public class NetworkManager {
             .build();
 
     private final ObjectMapper mapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
 
@@ -81,9 +85,12 @@ public class NetworkManager {
      * 建议在 JavaFX Application.start() 最开始调用一次。
      */
     public void init(String baseUrl) {
+        System.out.println("NetworkManager 初始化，baseUrl = " + baseUrl);
         this.baseUrl = baseUrl.endsWith("/")
                 ? baseUrl.substring(0, baseUrl.length() - 1)
                 : baseUrl;
+        //mapper.registerModule(new JavaTimeModule());
+        //mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     /** 应用退出时调用，优雅关闭线程池 */
