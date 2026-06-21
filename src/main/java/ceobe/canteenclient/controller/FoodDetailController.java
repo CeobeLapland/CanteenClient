@@ -49,6 +49,7 @@ public class FoodDetailController {
             foodImage.setImage(null);
             imagePlaceholder.setVisible(true);
         //}
+        System.out.println("已设置菜品详情: " + item.getName()+item.getDescription()+item.getLocation());
     }
 
     @FXML

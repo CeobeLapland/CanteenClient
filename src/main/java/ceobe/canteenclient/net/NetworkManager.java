@@ -56,6 +56,7 @@ public class NetworkManager {
     // ═══════════════════════════════════════════════════════════════════
 
     private String baseUrl = "http://localhost:8080";
+    //private String baseUrl = "https://ointment-nerd-cinnamon.ngrok-free.dev";
 
     /** 固定线程池：控制最大并发数，多余请求自动排队 */
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
